@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Data Manager - Control Panel</title>
+        <link rel="stylesheet" href="styles.css">
+    </head>
+
+    <body>
+        <div class="container">
+            <header>
+                <h1>📊 Data Manager Control Panel</h1>
+                <p class="subtitle">Manage JSON and SQLite databases with ease</p>
+                <a href="/api-docs.html" class="api-docs-link" target="_blank">📚 View API Documentation</a>
+            </header>
+
+            <div class="main-content">
+                <!-- Data Source Selection -->
+                <div class="card source-selector">
+                    <h2>🎯 Choose Your Data Source</h2>
+                    <p class="source-help">Select the type of database you want to work with:</p>
+                    <div class="data-source-buttons">
+                        <button class="btn btn-primary btn-large active" data-source="json">
+                            <span class="btn-icon">📄</span>
+                            <span class="btn-text">JSON Files</span>
+                        </button>
+                        <button class="btn btn-primary btn-large" data-source="sqlite">
+                            <span class="btn-icon">🗄️</span>
+                            <span class="btn-text">SQLite Databases</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- JSON Manager Section -->
+                <div id="json-section" class="section active">
+                    <div class="card">
+                        <h2>JSON File Management</h2>
+
+                        <!-- Create/Import JSON -->
+                        <div class="action-group">
+                            <h3>Create or Import JSON File</h3>
+                            <div class="form-group">
+                                <input type="text" id="json-filename" placeholder="Enter filename (without .json)">
+                                <button class="btn btn-success" onclick="createJSONFile()">Create New</button>
+                                <button class="btn btn-info" onclick="showImportDialog()">Import JSON Text</button>
+                            </div>
+
+                            <!-- File Upload Zone -->
+                            <div class="upload-zone" id="json-upload-zone">
+                                <div class="upload-content">
+                                    <p>📁 Drag & Drop JSON file here</p>
+                                    <p class="upload-or">or</p>
+                                    <input type="file" id="json-file-input" accept=".json" style="display: none;"
+                                        onchange="handleJSONFileSelect(event)">
+                                    <button class="btn btn-primary"
+                                        onclick="document.getElementById('json-file-input').click()">📂 Select JSON
+                                        File</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- List of JSON Files -->
+                        <div class="action-group">
+                            <h3>Your JSON Files</h3>
+                            <button class="btn btn-secondary" onclick="loadJSONFiles()">Refresh List</button>
+                            <div id="json-files-list" class="files-list"></div>
+                        </div>
+
+                        <!-- JSON Editor -->
+                        <div id="json-editor" class="editor-section" style="display: none;">
+                            <h3>Editing: <span id="current-json-file"></span></h3>
+
+                            <div class="editor-toolbar">
+                                <button class="btn btn-primary" onclick="addJSONRecord()">Add Record</button>
+                                <button class="btn btn-info" onclick="addJSONProperty()">Add Property to All</button>
+                                <button class="btn btn-warning" onclick="renameJSONProperty()">Rename Property</button>
+                                <button class="btn btn-danger" onclick="removeJSONProperty()">Remove Property</button>
+                                <button class="btn btn-success" onclick="saveJSON()">Save Changes</button>
+                                <button class="btn btn-secondary" onclick="exportJSON()">Export</button>
+                                <button class="btn" onclick="closeEditor()">Close</button>
+                            </div>
+
+                            <div class="data-table-container">
+                                <table id="json-data-table" class="data-table">
+                                    <thead id="json-table-head"></thead>
+                                    <tbody id="json-table-body"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SQLite Manager Section -->
+                <div id="sqlite-section" class="section">
+                    <div class="card">
+                        <h2>SQLite Database Management</h2>
+
+                        <!-- Create Database -->
+                        <div class="action-group">
+                            <h3>Create Database</h3>
+                            <div class="form-group">
+                                <input type="text" id="db-name" placeholder="Enter database name">
+                                <button class="btn btn-success" onclick="createDatabase()">Create Database</button>
+                            </div>
+
+                            <!-- SQLite File Upload Zone -->
+                            <div class="upload-zone" id="sqlite-upload-zone">
+                                <div class="upload-content">
+                                    <p>📁 Drag & Drop SQLite .db file here</p>
+                                    <p class="upload-or">or</p>
+                                    <input type="file" id="sqlite-file-input" accept=".db,.sqlite,.sqlite3"
+                                        style="display: none;" onchange="handleSQLiteFileSelect(event)">
+                                    <button class="btn btn-primary"
+                                        onclick="document.getElementById('sqlite-file-input').click()">📂 Select
+                                        Database File</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- List of Databases -->
+                        <div class="action-group">
+                            <h3>Your Databases</h3>
+                            <button class="btn btn-secondary" onclick="loadDatabases()">Refresh List</button>
+                            <div id="databases-list" class="files-list"></div>
+                        </div>
+
+                        <!-- Database Editor -->
+                        <div id="db-editor" class="editor-section" style="display: none;">
+                            <h3>Database: <span id="current-db"></span></h3>
+
+                            <!-- Create Table -->
+                            <div class="action-group">
+                                <h4>Create New Table</h4>
+                                <button class="btn btn-primary" onclick="showCreateTableDialog()">Create Table</button>
+                            </div>
+
+                            <!-- Tables List -->
+                            <div class="action-group">
+                                <h4>Tables</h4>
+                                <div id="tables-list" class="tables-list"></div>
+                            </div>
+
+                            <!-- Table Editor -->
+                            <div id="table-editor" style="display: none;">
+                                <h4>Table: <span id="current-table"></span></h4>
+
+                                <div class="editor-toolbar">
+                                    <button class="btn btn-primary" onclick="addSQLRecord()">Add Record</button>
+                                    <button class="btn btn-info" onclick="addSQLColumn()">Add Column</button>
+                                    <button class="btn btn-secondary" onclick="refreshTableData()">Refresh</button>
+                                    <button class="btn btn-warning" onclick="executeSQLQuery()">Execute Custom
+                                        Query</button>
+                                </div>
+
+                                <div class="data-table-container">
+                                    <table id="sql-data-table" class="data-table">
+                                        <thead id="sql-table-head"></thead>
+                                        <tbody id="sql-table-body"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Messages -->
+                <div id="status-message" class="status-message"></div>
+            </div>
+        </div>
+
+        <!-- Modal for dialogs -->
+        <div id="modal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <div id="modal-body"></div>
+            </div>
+        </div>
+
+        <script src="app.js"></script>
+    </body>
+
+</html>

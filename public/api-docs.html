@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>API Documentation - Data Manager</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                padding: 20px;
+                color: #2c3e50;
+            }
+
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+                background: white;
+                border-radius: 12px;
+                padding: 40px;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            }
+
+            h1 {
+                color: #667eea;
+                margin-bottom: 10px;
+                font-size: 2.5rem;
+            }
+
+            .subtitle {
+                color: #7b8a8b;
+                font-size: 1.1rem;
+                margin-bottom: 30px;
+            }
+
+            .section {
+                margin-bottom: 40px;
+            }
+
+            h2 {
+                color: #2c3e50;
+                border-bottom: 3px solid #667eea;
+                padding-bottom: 10px;
+                margin-bottom: 20px;
+            }
+
+            .endpoint {
+                background: #f8f9fa;
+                border-left: 4px solid #667eea;
+                padding: 15px;
+                margin-bottom: 15px;
+                border-radius: 4px;
+            }
+
+            .endpoint-header {
+                display: flex;
+                gap: 10px;
+                align-items: center;
+                margin-bottom: 10px;
+            }
+
+            .method {
+                font-weight: bold;
+                padding: 4px 12px;
+                border-radius: 4px;
+                font-size: 12px;
+                text-transform: uppercase;
+            }
+
+            .method-get {
+                background: #5cb85c;
+                color: white;
+            }
+
+            .method-post {
+                background: #5bc0de;
+                color: white;
+            }
+
+            .method-put {
+                background: #f0ad4e;
+                color: white;
+            }
+
+            .method-delete {
+                background: #d9534f;
+                color: white;
+            }
+
+            .endpoint-path {
+                font-family: 'Courier New', monospace;
+                font-weight: bold;
+                color: #2c3e50;
+            }
+
+            .endpoint-description {
+                color: #7b8a8b;
+                margin-bottom: 10px;
+            }
+
+            .code-block {
+                background: #2c3e50;
+                color: #5cb85c;
+                padding: 15px;
+                border-radius: 4px;
+                overflow-x: auto;
+                font-family: 'Courier New', monospace;
+                font-size: 14px;
+                margin-top: 10px;
+            }
+
+            .example {
+                background: #fff;
+                border: 2px solid #667eea;
+                border-radius: 8px;
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+
+            .example h3 {
+                color: #667eea;
+                margin-bottom: 15px;
+            }
+
+            .back-link {
+                display: inline-block;
+                margin-bottom: 20px;
+                color: #667eea;
+                text-decoration: none;
+                font-weight: 600;
+            }
+
+            .back-link:hover {
+                text-decoration: underline;
+            }
+
+            .base-url {
+                background: #ecf0f1;
+                padding: 10px;
+                border-radius: 4px;
+                font-family: 'Courier New', monospace;
+                margin: 20px 0;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="container">
+            <a href="/" class="back-link">← Back to Data Manager</a>
+
+            <h1>📚 Data Manager REST API</h1>
+            <p class="subtitle">Complete API documentation for managing JSON files and SQLite databases</p>
+
+            <div class="base-url">
+                <strong>Base URL:</strong> <span id="base-url">http://localhost:3000/api</span>
+            </div>
+
+            <div class="section">
+                <h2>📄 JSON Endpoints</h2>
+                <div id="json-endpoints"></div>
+            </div>
+
+            <div class="section">
+                <h2>🗄️ SQLite Endpoints</h2>
+                <div id="sqlite-endpoints"></div>
+            </div>
+
+            <div class="section">
+                <h2>💡 Examples</h2>
+                <div id="examples"></div>
+            </div>
+        </div>
+
+        <script>
+            async function loadDocumentation() {
+                try {
+                    const response = await fetch('/api');
+                    const docs = await response.json();
+
+                    document.getElementById('base-url').textContent = docs.baseUrl;
+
+                    // Render JSON endpoints
+                    const jsonContainer = document.getElementById('json-endpoints');
+                    Object.entries(docs.endpoints.json).forEach(([endpoint, details]) => {
+                        const [method, path] = endpoint.split(' ');
+                        jsonContainer.innerHTML += createEndpointHTML(method, path, details);
+                    });
+
+                    // Render SQLite endpoints
+                    const sqliteContainer = document.getElementById('sqlite-endpoints');
+                    Object.entries(docs.endpoints.sqlite).forEach(([endpoint, details]) => {
+                        const [method, path] = endpoint.split(' ');
+                        sqliteContainer.innerHTML += createEndpointHTML(method, path, details);
+                    });
+
+                    // Render examples
+                    const examplesContainer = document.getElementById('examples');
+                    Object.entries(docs.examples).forEach(([name, example]) => {
+                        examplesContainer.innerHTML += `
+                        <div class="example">
+                            <h3>${name}</h3>
+                            <div class="endpoint-header">
+                                <span class="method method-${example.method.toLowerCase()}">${example.method}</span>
+                                <span class="endpoint-path">${example.url}</span>
+                            </div>
+                            <div class="code-block">${JSON.stringify(example.body, null, 2)}</div>
+                        </div>
+                    `;
+                    });
+
+                } catch (error) {
+                    console.error('Error loading documentation:', error);
+                }
+            }
+
+            function createEndpointHTML(method, path, details) {
+                let html = `
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method method-${method.toLowerCase()}">${method}</span>
+                        <span class="endpoint-path">${path}</span>
+                    </div>
+                    <div class="endpoint-description">${details.description}</div>
+            `;
+
+                if (details.body) {
+                    html += `<strong>Request Body:</strong><div class="code-block">${JSON.stringify(details.body, null, 2)}</div>`;
+                }
+
+                if (details.query) {
+                    html += `<strong>Query Parameters:</strong><div class="code-block">${JSON.stringify(details.query, null, 2)}</div>`;
+                }
+
+                if (details.response) {
+                    html += `<strong>Response:</strong><div class="code-block">${JSON.stringify(details.response, null, 2)}</div>`;
+                }
+
+                html += '</div>';
+                return html;
+            }
+
+            loadDocumentation();
+        </script>
+    </body>
+
+</html>
